@@ -12,7 +12,7 @@ def read_requirements():
 
 
 setup(
-    name="HigherOrderInterpolation3DTorch",
+    name="interpolation_higher_order_3d_torch",
     version="0.1",
     description="A highly performant, GPU compatible package for higher order interpolation in PyTorch",
     long_description=readme(),
