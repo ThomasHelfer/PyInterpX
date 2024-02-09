@@ -1,4 +1,4 @@
-from GeneralRelativity.Interpolation import *  # Import necessary functions from Interpolation module
+from src.Interpolation import *  # Import necessary functions from Interpolation module
 
 
 def sinusoidal_function(x, y, z):

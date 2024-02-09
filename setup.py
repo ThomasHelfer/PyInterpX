@@ -12,17 +12,17 @@ def read_requirements():
 
 
 setup(
-    name="GeneralRelativity",
+    name="HigherOrderInterpolation3DTorch",
     version="0.1",
-    description="A translation of crucial parts of GRTL in torch for accelerated learning",
+    description="A highly performant, GPU compatible package for higher order interpolation in PyTorch",
     long_description=readme(),
     classifiers=[
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3.8",
-        "Topic :: Machine learning :: Physics :: Simulation :: General Relativity",
+        "Topic :: Pytorch :: Interpolation :: Machine learning",
     ],
-    keywords="Machine learning, Physics, Simulation, General Relativity",
+    keywords="Machine learning, Pytorch, Interpolation, Higher order interpolation, 3D interpolation, GPU compatible",
     author="ThomasHelfer",
     author_email="thomashelfer@live.de",
     license="MIT",  # Updated to MIT License
