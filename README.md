@@ -1,4 +1,4 @@
-![Unittest](https://github.com/ThomasHelfer/TorchGRTL/actions/workflows/actions.yml/badge.svg)
+![Unittest](https://github.com/ThomasHelfer/HigherOrderInterpolation3DTorch/actions/workflows/actions.yml/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT)
 
 
