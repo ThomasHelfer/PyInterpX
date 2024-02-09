@@ -20,12 +20,6 @@ Before installing TorchGRTL, ensure you have the following prerequisites:
 - pip package manager
 
 
-
-## Usage
-
-   TD
-
-
 ### License
 
 TorchGRTL is released under the MIT License. See LICENSE for more details.
