@@ -43,6 +43,7 @@ To get started with PyInterpX:
 
     ```python
     points, power, channels = 6, 3, 25
+    # Running on GPU for even faster computations 
     interp = interp(points, power, channels, device="cuda:0")
     ```
 
@@ -50,16 +51,19 @@ To get started with PyInterpX:
 
     ```python
     points, power, channels = 6, 3, 25
+    # Using double for more precision 
     interp = interp(points, power, channels, dtype=torch.double)
     ```
 
 - **Integrated with PyTorch**: Easily integrates within the PyTorch ecosystem.
 
     ```python
+    # A simple model which uses interpolation at some layer
     class Model(torch.nn.Module):
         def __init__(self):
             super(Model, self).__init__()
             points, power, channels = 6, 3, 25
+            # Setting up interpolation 
             self.interpolation = interp(points, power, channels)
 
             self.convs = torch.nn.Sequential(
@@ -72,10 +76,26 @@ To get started with PyInterpX:
             x = self.interpolation(x)
             return x
     ```
-
-
-## Installation
-
+- **Choose simply the grid alignment you like.
+  
+    ```python
+    points, power, channels = 6, 3, 25
+    interp = interp(points, power, channels, dtype=torch.double,align_corners = False)
+    ```
+    <p align="center">
+        <img src="https://github.com/ThomasHelfer/HigherOrderInterpolation3DTorch/blob/main/img/no_align.png" alt="no alignment" width="50%" height="auto"/>
+    </p>
+    or if you do not want to have any aligment with the input grid
+    
+    ```python
+    points, power, channels = 6, 3, 25
+    interp = interp(points, power, channels, dtype=torch.double,align_corners = True)
+    ```
+    
+    <p align="center">
+        <img src="https://github.com/ThomasHelfer/HigherOrderInterpolation3DTorch/blob/main/img/align.png" alt="aligned" width="50%" height="auto"/>
+    </p>
+    
 ### Prerequisites
 
 Before installing PyInterpX, ensure you meet the following prerequisites:
