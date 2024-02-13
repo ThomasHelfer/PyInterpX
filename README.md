@@ -1,36 +1,91 @@
-![Unittest](https://github.com/ThomasHelfer/HigherOrderInterpolation3DTorch/actions/workflows/actions.yml/badge.svg)
+![Unit Test Status](https://github.com/ThomasHelfer/HigherOrderInterpolation3DTorch/actions/workflows/actions.yml/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT)
 
-
-# Higher Order Interpolation in 3D for Torch
+# PyInterpX - Higher Order Interpolation in 3D for Torch
 
 ## Overview
-This is a small library that allows a more general interpolation in 3D, using higher order polynomial basis, which Pytorch's [torch.nn.functional.interpolate()](https://pytorch.org/docs/stable/generated/torch.ao.nn.quantized.functional.interpolate.html) currently does not offer. 
 
-## Key Features:
+PyInterpX is a compact library designed for advanced 3D interpolation using higher order polynomial bases, which is not currently supported by PyTorch's `torch.nn.functional.interpolate()` method. This enhancement allows for more precise and customized interpolation processes in 3D spaces, catering to specialized applications requiring beyond-linear data manipulation.
 
-Fast
-- Highly performant on any device 
-![alt text](./img/Comparison.png)
+## Quick Start
 
-CPU and GPU compatible 
-- Can run on both CPU and GPU's 
+To get started with PyInterpX:
 
-Integrated with PyTorch
-- Can integrate with the PyTorch interface
+1. Install the library using pip:
+
+    ```bash
+    pip install pyinterpx
+    ```
+
+2. Import `interp` from PyInterpX and PyTorch in your script or notebook:
+
+    ```python
+    from pyinterpx.Interpolation import interp
+    import torch
+    ```
+
+3. Utilize the interpolation function with a 6x6x6 kernel, polynomials up to the third power, and 25 channels:
+
+    ```python
+    points, power, channels = 6, 3, 25
+    Interp = interp(points, power, channels)
+    x = torch.rand(2, 25, 10, 10, 10)
+    Interp(x)
+    ```
+
+## Key Features
+
+- **Fast**: Optimized for high performance across any device.
+
+![Performance Comparison](https://github.com/ThomasHelfer/HigherOrderInterpolation3DTorch/blob/main/img/Comparison.png "Performance Comparison")
+
+- **CPU and GPU Compatible**: Functions seamlessly on both CPU and GPU environments.
+
+    ```python
+    points, power, channels = 6, 3, 25
+    interp = interp(points, power, channels, device="cuda:0")
+    ```
+
+- **Precise**: Supports various data types for precise computation.
+
+    ```python
+    points, power, channels = 6, 3, 25
+    interp = interp(points, power, channels, dtype=torch.double)
+    ```
+
+- **Integrated with PyTorch**: Easily integrates within the PyTorch ecosystem.
+
+    ```python
+    class Model(torch.nn.Module):
+        def __init__(self):
+            super(Model, self).__init__()
+            points, power, channels = 6, 3, 25
+            self.interpolation = interp(points, power, channels)
+
+            self.convs = torch.nn.Sequential(
+                torch.nn.Conv3d(25, 64, kernel_size=3, padding=1),
+                torch.nn.ReLU(inplace=True),
+            )
+
+        def forward(self, x):
+            x = self.convs(x)
+            x = self.interpolation(x)
+            return x
+    ```
+
 
 ## Installation
 
 ### Prerequisites
-Before installing TorchGRTL, ensure you have the following prerequisites:
+
+Before installing PyInterpX, ensure you meet the following prerequisites:
 - Python 3.8 or higher
 - pip package manager
 
+## License
 
-### License
+PyInterpX is open-sourced under the MIT License. For more details, see the LICENSE file.
 
-TorchGRTL is released under the MIT License. See LICENSE for more details.
+## Contact
 
-### Contact
-
-For questions or support, please contact Thomas Helfer at thomashelfer@live.de.
+For inquiries or support, reach out to Thomas Helfer at thomashelfer@live.de.
