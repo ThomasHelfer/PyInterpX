@@ -9,8 +9,15 @@ This is a small library that allows a more general interpolation in 3D, using hi
 
 ## Key Features:
 
-Accurate and efficient:
-- Achieve high-order polynomial interpolation with exceptional performance using a convolutional network architecture, ensuring precise results for your simulations.
+Fast
+- Highly performant on any device 
+![alt text](./img/Comparison.png)
+
+CPU and GPU compatible 
+- Can run on both CPU and GPU's 
+
+Integrated with PyTorch
+- Can integrate with the PyTorch interface
 
 ## Installation
 
