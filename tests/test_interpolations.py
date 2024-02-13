@@ -1,4 +1,4 @@
-from src.Interpolation import *  # Import necessary functions from Interpolation module
+from PyInterpX.Interpolation import *  # Import necessary functions from Interpolation module
 
 
 def sinusoidal_function(x, y, z):
