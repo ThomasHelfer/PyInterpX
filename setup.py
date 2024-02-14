@@ -8,7 +8,7 @@ def readme():
 
 setup(
     name="PyInterpX",
-    version="0.1.0-alpha.1",
+    version="0.2.1",
     description="A highly performant, GPU compatible package for higher order interpolation in PyTorch",
     long_description=readme(),
     long_description_content_type='text/markdown',
