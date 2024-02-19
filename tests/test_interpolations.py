@@ -68,11 +68,12 @@ def test_interpolation_on_grid():
     """
     Test the interpolation on a 3D grid.
 
-    This function initializes an interpolation object, creates a 3D grid of random values,
+    This function initializes an interpolation object, creates a 3D grid
     and applies sinusoidal function to populate the grid. It then interpolates these values
     using the `interp` class and compares the interpolated values with the ground truth
     obtained by directly applying the sinusoidal function to the interpolated positions.
     An assertion is used to check if the interpolation error is within the specified tolerance.
+    Furthermore, it also test that the old and new interpolation methods give the same result.
 
     Attributes:
     tol (float): Tolerance level for the difference between interpolated and ground truth values.
@@ -94,7 +95,7 @@ def test_interpolation_on_grid():
             dx = 0.01
 
             # Initializing a tensor of random values to represent the grid
-            x = torch.rand(2, channels, length, length, length)
+            x = torch.zeros(2, channels, length, length, length)
 
             # Preparing input positions for the sinusoidal function
             input_positions = torch.zeros(length, length, length, 3)
@@ -105,11 +106,9 @@ def test_interpolation_on_grid():
                         pos = dx * np.array([i, j, k])
                         x[:, :, i, j, k] = sinusoidal_function(*pos)
 
-            # Perform interpolation and measure time taken
-            time1 = time.time()
+            # Perform interpolation
             interpolated = interpolation(x)
             interpolated_old = interpolation.non_vector_implementation(x)
-            print(f"Time taken for interpolation: {(time.time() - time1):.2f} sec")
             positions = interpolation.get_postion(x)
 
             # Preparing ground truth for comparison
@@ -141,6 +140,71 @@ def test_interpolation_on_grid():
             assert torch.mean(torch.abs(interpolated_old - interpolated)) < tol
 
 
+def test_interpolation_grid_alignment():
+    """
+    Test the interpolation on a 3D grid.
+
+    This function initializes an interpolation object, creates a 3D grid and applies sinusoidal
+    function to populate the grid. It then interpolates these values using the `interp` class
+    and compares that the every 2nd value is the same as the ground truth.
+
+    Attributes:
+    tol (float): Tolerance level for the difference between interpolated and ground truth values.
+    length (int): Length of each dimension in the grid.
+    dx (float): Differential step to scale the grid positions.
+    """
+    centering = True
+    for num_points in [4, 6, 8]:
+        for length in [num_points, 10, 12, 13, 14]:
+            channels = 25
+            interpolation = interp(
+                num_points=num_points,
+                max_degree=num_points // 2,
+                num_channels=channels,
+                learnable=False,
+                align_corners=centering,
+            )
+            # length = 10
+            dx = 0.01
+
+            # Initializing a tensor of random values to represent the grid
+            x = torch.rand(2, channels, length, length, length)
+
+            # Preparing input positions for the sinusoidal function
+            input_positions = torch.zeros(length, length, length, 3)
+            for i in range(x.shape[2]):
+                for j in range(x.shape[3]):
+                    for k in range(x.shape[4]):
+                        input_positions[i, j, k] = torch.tensor([i, j, k])
+                        pos = dx * np.array([i, j, k])
+                        x[:, :, i, j, k] = sinusoidal_function(*pos)
+
+            # Perform interpolation
+            interpolated = interpolation(x)
+            positions = interpolation.get_postion(x)
+
+            # Preparing ghosts for comparison
+            ghosts = int(math.ceil(num_points / 2))
+
+            # Comparing interpolated and ground truth values
+            # assert((torch.mean(torch.abs(interpolated - ground_truth))))
+            assert (
+                torch.mean(
+                    torch.abs(
+                        x[
+                            :,
+                            :,
+                            ghosts - 1 : -ghosts,
+                            ghosts - 1 : -ghosts,
+                            ghosts - 1 : -ghosts,
+                        ]
+                        - interpolated[:, :, ::2, ::2, ::2]
+                    )
+                )
+            ) == 0
+
+
 if __name__ == "__main__":
+    test_interpolation_grid_alignment()
     test_interpolation_stencils()
     test_interpolation_on_grid()

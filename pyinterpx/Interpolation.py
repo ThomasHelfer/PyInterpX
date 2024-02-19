@@ -161,13 +161,14 @@ class interp(torch.nn.Module):
         max_degree (int): The maximum degree of the polynomial used in interpolation.
         num_channels (int): Number of channels in the input tensor.
         learnable (bool): If True, the interpolation parameters are learnable.
-        align_grids_with_lower_dim_values (bool): If True, aligns grid points with lower-dimensional values.
+        align_corners (bool): If True, aligns grid points with lower-dimensional values.
         dtype (torch.dtype): dtype of weights, defaults to float
         device (str): defaults to 'cpu'
         """
         super(interp, self).__init__()
         self.num_points = num_points
         self.max_degree = max_degree
+        self.align_corners = align_corners
         self.vecvals_array = []  # Vector values for interpolation
         self.grid_points_index_array = []  # Grid points indices for interpolation
         self.num_channels = num_channels
@@ -205,14 +206,12 @@ class interp(torch.nn.Module):
         self.vecvals_array = torch.tensor(self.vecvals_array)
 
         ## Initialize the kernel for convolution
-
         self.conv_layers = []
 
         # Iterate over the displacement, weight, and relative position information
-        for (
-            displacements,
-            weights,
-        ) in zip(self.grid_points_index_array, self.vecvals_array):
+        for displacements, weights, position in zip(
+            self.grid_points_index_array, self.vecvals_array, self.relative_positions
+        ):
             kernel_size = self.num_points  # Size of the convolutional kernel
 
             # Create a convolutional kernel with zeros
@@ -224,11 +223,16 @@ class interp(torch.nn.Module):
             min_index = torch.min(displacements).to(device)
 
             # Populate the kernel with weights according to displacements
-            for displacement, weight in zip(displacements, weights):
-                index = (
-                    displacement - min_index
-                )  # Adjust index based on minimum displacement
-                kernel[:, :, index[0], index[1], index[2]] = weight
+            if self.align_corners and (position == 0).all():
+                # If align_corners is True, the kernel is populated with 1 at the center
+                index = torch.tensor([0, 0, 0]) - min_index
+                kernel[:, :, index[0], index[1], index[2]] = 1.0
+            else:
+                for displacement, weight in zip(displacements, weights):
+                    index = (
+                        displacement - min_index
+                    )  # Adjust index based on minimum displacement
+                    kernel[:, :, index[0], index[1], index[2]] = weight
 
             conv_layer = nn.Conv3d(
                 num_channels, num_channels, kernel_size, groups=num_channels, bias=False
@@ -478,9 +482,9 @@ if __name__ == "__main__":
 
         # Perform interpolation and measure time taken
         time1 = time.time()
-        interpolated, _ = interpolation.non_vector_implementation(x)
+        interpolated = interpolation.non_vector_implementation(x)
         print(f"Default interpolation: {(time.time() - time1):.2f} sec")
 
         time1 = time.time()
-        interpolated, _ = interpolation(x)
+        interpolated = interpolation(x)
         print(f"This interpolation: {(time.time() - time1):.2f} sec")
