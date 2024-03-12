@@ -114,10 +114,7 @@ def calculate_stencils(
 
     # Calculate the matrix of basis functions evaluations on the coarse grid
     coarse_matrix = np.array(
-        [
-            [x**i * y**j * z**k for (i, j, k) in powers]
-            for x, y, z in coarse_grid_points
-        ]
+        [[x**i * y**j * z**k for (i, j, k) in powers] for x, y, z in coarse_grid_points]
     )
 
     # Compute the normal matrix A^TA and the right-hand side A^Tb
@@ -150,6 +147,7 @@ class interp(torch.nn.Module):
         num_channels: int = 1,
         learnable: bool = False,
         align_corners: bool = False,
+        factor: int = 2,
         dtype: Type[torch.dtype] = torch.float,
         device: str = "cpu",
     ):
@@ -162,6 +160,7 @@ class interp(torch.nn.Module):
         num_channels (int): Number of channels in the input tensor.
         learnable (bool): If True, the interpolation parameters are learnable.
         align_corners (bool): If True, aligns grid points with lower-dimensional values.
+        factor(int, even): how much enhancement (
         dtype (torch.dtype): dtype of weights, defaults to float
         device (str): defaults to 'cpu'
         """
@@ -169,16 +168,20 @@ class interp(torch.nn.Module):
         self.num_points = num_points
         self.max_degree = max_degree
         self.align_corners = align_corners
+        self.factor = factor
         self.vecvals_array = []  # Vector values for interpolation
         self.grid_points_index_array = []  # Grid points indices for interpolation
         self.num_channels = num_channels
         tol = 1e-10  # Cutting weight values below this tolerance, assumtion is that they are just numerical noise
 
+        assert (self.factor % 2 == 0) and (self.factor > 0)
+
         # Define fixed values for grid alignment
-        if align_corners:
-            values = [0.0, 0.50]
-        else:
-            values = [0.25, 0.75]
+        values = np.linspace(0, 1, factor, endpoint=False)
+
+        if not align_corners:
+            values += values[1] / 2.0
+
         self.relative_positions = np.array(list(itertools.product(values, repeat=3)))
 
         # Calculate vector values and grid points indices
@@ -194,11 +197,11 @@ class interp(torch.nn.Module):
 
         if align_corners:
             self.relative_index_for_interpolated_array = np.int8(
-                np.round(self.relative_positions + 0.5)
+                np.round(self.relative_positions * factor)
             )
         else:
             self.relative_index_for_interpolated_array = np.int8(
-                np.round(self.relative_positions)
+                np.round((self.relative_positions) * factor - 0.5)
             )
 
         # Convert lists to tensors for faster computation
@@ -264,9 +267,9 @@ class interp(torch.nn.Module):
         interpolation = torch.zeros(
             shape[0],  # batch size
             shape[1],  # number of channels
-            (shape[2] - 2 * ghosts) * 2 + 2,  # modified x dimension
-            (shape[3] - 2 * ghosts) * 2 + 2,  # modified y dimension
-            (shape[4] - 2 * ghosts) * 2 + 2,  # modified z dimension
+            (shape[2] - 2 * ghosts) * self.factor + self.factor,
+            (shape[3] - 2 * ghosts) * self.factor + self.factor,
+            (shape[4] - 2 * ghosts) * self.factor + self.factor,
             dtype=dtype,
             device=device,
         )
@@ -284,9 +287,9 @@ class interp(torch.nn.Module):
             interpolation[
                 :,
                 :,
-                relative_index[0] :: 2,
-                relative_index[1] :: 2,
-                relative_index[2] :: 2,
+                relative_index[0] :: self.factor,
+                relative_index[1] :: self.factor,
+                relative_index[2] :: self.factor,
             ] = convoluted_tensor
 
         return interpolation
@@ -308,9 +311,9 @@ class interp(torch.nn.Module):
 
         # Initialize a tensor to store positions
         position = torch.zeros(
-            (shape[2] - 2 * ghosts) * 2 + 2,
-            (shape[3] - 2 * ghosts) * 2 + 2,
-            (shape[4] - 2 * ghosts) * 2 + 2,
+            (shape[2] - 2 * ghosts) * self.factor + self.factor,
+            (shape[3] - 2 * ghosts) * self.factor + self.factor,
+            (shape[4] - 2 * ghosts) * self.factor + self.factor,
             3,
         )
 
@@ -332,7 +335,7 @@ class interp(torch.nn.Module):
                     ):
                         result = 0
                         # Writing results to the interpolated array
-                        ind = 2 * (index_for_input_array - (ghosts - 1)) + (
+                        ind = self.factor * (index_for_input_array - (ghosts - 1)) + (
                             relative_index
                         )
                         # This array gives the position of the interpolated point in the interpolated array relative to the input array
@@ -361,9 +364,9 @@ class interp(torch.nn.Module):
         interpolation = torch.zeros(
             shape[0],
             shape[1],
-            (shape[2] - 2 * ghosts) * 2 + 2,
-            (shape[3] - 2 * ghosts) * 2 + 2,
-            (shape[4] - 2 * ghosts) * 2 + 2,
+            (shape[2] - 2 * ghosts) * self.factor + self.factor,
+            (shape[3] - 2 * ghosts) * self.factor + self.factor,
+            (shape[4] - 2 * ghosts) * self.factor + self.factor,
         )
 
         # Perform interpolation
@@ -391,7 +394,7 @@ class interp(torch.nn.Module):
                             )
 
                         # Writing results to the interpolated array
-                        ind = 2 * (index_for_input_array - (ghosts - 1)) + (
+                        ind = self.factor * (index_for_input_array - (ghosts - 1)) + (
                             relative_index
                         )
                         interpolation[:, :, ind[0], ind[1], ind[2]] = result
@@ -439,7 +442,16 @@ class interp(torch.nn.Module):
         plt.xlabel("X Position")
         plt.ylabel("Y Position")
         plt.grid(True)
-        plt.savefig(f"interpolation_grid.png")
+        plt.savefig(f"interpolation_grid.png", dpi=300)
+
+        # zoom limits
+        xmin, xmax = 3.95, 5.05
+        ymin, ymax = 3.95, 5.05
+
+        plt.xlim(xmin, xmax)
+        plt.ylim(ymin, ymax)
+
+        plt.savefig("interpolation_grid_zoomed.png", dpi=300)
         plt.close()
 
 
