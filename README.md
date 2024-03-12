@@ -79,7 +79,7 @@ To get started with PyInterpX:
             x = self.interpolation(x)
             return x
     ```
-- **Choose simply the grid alignment you like.
+- Choose simply the **grid alignment** you like.
   
     ```python
     points, power, channels = 6, 3, 25
@@ -98,6 +98,25 @@ To get started with PyInterpX:
     <p align="center">
         <img src="https://github.com/ThomasHelfer/HigherOrderInterpolation3DTorch/blob/main/img/align.png" alt="aligned" width="50%" height="auto"/>
     </p>
+
+- Choose the enhacement **factor** you like
+    ```python
+    factor = 4
+    points, power, channels = 6, 3, 25
+    interp = interp(points, power, channels, dtype=torch.double,align_corners = False,factor = factor)
+    ```
+    <p align="center">
+        <img src="https://github.com/ThomasHelfer/HigherOrderInterpolation3DTorch/blob/main/img/interpolation_grid_zoomed_factor_4.png" alt="no alignment" width="50%" height="auto"/>
+    </p>
+    
+     ```python
+    factor = 16
+    points, power, channels = 6, 3, 25
+    interp = interp(points, power, channels, dtype=torch.double,align_corners = False,factor = factor)
+    ```
+    <p align="center">
+        <img src="https://github.com/ThomasHelfer/HigherOrderInterpolation3DTorch/blob/main/img/interpolation_grid_zoomed_factor_16.png" alt="no alignment" width="50%" height="auto"/>
+    </p>    
     
 ### Prerequisites
 
