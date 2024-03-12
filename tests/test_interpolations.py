@@ -82,7 +82,7 @@ def test_interpolation_on_grid():
     """
     for centering in [True, False]:
         for num_points in [4, 6, 8]:
-            for factor in [2,4]:
+            for factor in [2, 4]:
                 tol = 1e-9
                 channels = 25
                 interpolation = interp(
@@ -90,7 +90,7 @@ def test_interpolation_on_grid():
                     max_degree=num_points // 2,
                     num_channels=channels,
                     learnable=False,
-                    factor = factor,
+                    factor=factor,
                     align_corners=centering,
                 )
                 length = 10
@@ -158,52 +158,54 @@ def test_interpolation_grid_alignment():
     centering = True
     for num_points in [4, 6, 8]:
         for length in [num_points, 10, 12, 13, 14]:
-            channels = 25
-            interpolation = interp(
-                num_points=num_points,
-                max_degree=num_points // 2,
-                num_channels=channels,
-                learnable=False,
-                align_corners=centering,
-            )
-            # length = 10
-            dx = 0.01
-
-            # Initializing a tensor of random values to represent the grid
-            x = torch.rand(2, channels, length, length, length)
-
-            # Preparing input positions for the sinusoidal function
-            input_positions = torch.zeros(length, length, length, 3)
-            for i in range(x.shape[2]):
-                for j in range(x.shape[3]):
-                    for k in range(x.shape[4]):
-                        input_positions[i, j, k] = torch.tensor([i, j, k])
-                        pos = dx * np.array([i, j, k])
-                        x[:, :, i, j, k] = sinusoidal_function(*pos)
-
-            # Perform interpolation
-            interpolated = interpolation(x)
-            positions = interpolation.get_postion(x)
-
-            # Preparing ghosts for comparison
-            ghosts = int(math.ceil(num_points / 2))
-
-            # Comparing interpolated and ground truth values
-            # assert((torch.mean(torch.abs(interpolated - ground_truth))))
-            assert (
-                torch.mean(
-                    torch.abs(
-                        x[
-                            :,
-                            :,
-                            ghosts - 1 : -ghosts,
-                            ghosts - 1 : -ghosts,
-                            ghosts - 1 : -ghosts,
-                        ]
-                        - interpolated[:, :, ::2, ::2, ::2]
-                    )
+            for factor in [2, 4]:
+                channels = 25
+                interpolation = interp(
+                    num_points=num_points,
+                    max_degree=num_points // 2,
+                    num_channels=channels,
+                    learnable=False,
+                    factor=factor,
+                    align_corners=centering,
                 )
-            ) == 0
+                # length = 10
+                dx = 0.01
+
+                # Initializing a tensor of random values to represent the grid
+                x = torch.rand(2, channels, length, length, length)
+
+                # Preparing input positions for the sinusoidal function
+                input_positions = torch.zeros(length, length, length, 3)
+                for i in range(x.shape[2]):
+                    for j in range(x.shape[3]):
+                        for k in range(x.shape[4]):
+                            input_positions[i, j, k] = torch.tensor([i, j, k])
+                            pos = dx * np.array([i, j, k])
+                            x[:, :, i, j, k] = sinusoidal_function(*pos)
+
+                # Perform interpolation
+                interpolated = interpolation(x)
+                positions = interpolation.get_postion(x)
+
+                # Preparing ghosts for comparison
+                ghosts = int(math.ceil(num_points / 2))
+
+                # Comparing interpolated and ground truth values
+                # assert((torch.mean(torch.abs(interpolated - ground_truth))))
+                assert (
+                    torch.mean(
+                        torch.abs(
+                            x[
+                                :,
+                                :,
+                                ghosts - 1 : -ghosts,
+                                ghosts - 1 : -ghosts,
+                                ghosts - 1 : -ghosts,
+                            ]
+                            - interpolated[:, :, ::factor, ::factor, ::factor]
+                        )
+                    )
+                ) == 0
 
 
 if __name__ == "__main__":
