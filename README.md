@@ -1,10 +1,15 @@
-![Unit Test Status](https://github.com/ThomasHelfer/HigherOrderInterpolation3DTorch/actions/workflows/actions.yml/badge.svg)
-[![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT)
 
 # PyInterpX - Higher Order Interpolation in 3D for Torch
 <p align="center">
     <img src="https://github.com/ThomasHelfer/PyInterpX/blob/main/img/logo_cropped.png" alt="no alignment" width="25%" height="auto"/>
 </p>
+
+<div align="center">
+  <img src="https://github.com/ThomasHelfer/HigherOrderInterpolation3DTorch/actions/workflows/actions.yml/badge.svg" alt="Unit Test Status">
+  <a href="https://opensource.org/licenses/MIT">
+    <img src="https://img.shields.io/badge/License-MIT-red.svg" alt="License: MIT">
+  </a>
+</div>
 
 ## Overview
 
